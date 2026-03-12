@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mBank AI</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+
+<header class="navbar">
+    <div class="nav-inner">
+        <div class="logo-block">
+            <div class="logo-circle">m</div>
+            <div>
+                <h2>mBank AI</h2>
+                <p>Financial Assistant</p>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="{% url 'home' %}">Главная</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

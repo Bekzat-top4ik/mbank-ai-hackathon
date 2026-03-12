@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-card">
+        <div>
+            <p class="hero-label">mBank AI Assistant</p>
+            <h1>Умный помощник для твоих финансов</h1>
+            <p class="hero-text">
+                Контролируй расходы, ставь цели и получай советы от AI.
+            </p>
+            <a href="{% url 'dashboard' %}" class="main-btn">Открыть dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
