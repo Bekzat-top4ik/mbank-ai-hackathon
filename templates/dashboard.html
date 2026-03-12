@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Финансовый кабинет</p>
+            <h1>Добро пожаловать, {{ user_name }}</h1>
+            <p class="section-subtext">Вот краткий обзор твоих финансов на сегодня.</p>
+        </div>
+        <a href="#" class="main-btn">+ Добавить расход</a>
+    </div>
+
+    <div class="balance-card">
+        <p class="balance-label">Текущий баланс</p>
+        <h2>{{ balance }} сом</h2>
+        <div class="balance-stats">
+            <div class="stat-box income">
+                <span>Доходы</span>
+                <strong>{{ income }} сом</strong>
+            </div>
+            <div class="stat-box expense">
+                <span>Расходы</span>
+                <strong>{{ expense }} сом</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="cards-grid">
+        <div class="info-card">
+            <h3>Финансовая цель</h3>
+            <p>Накопить на новый телефон</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ goal_progress }}%;"></div>
+            </div>
+            <p class="progress-text">{{ goal_progress }}% выполнено</p>
+        </div>
+
+        <div class="info-card">
+            <h3>AI совет</h3>
+            <p>
+                В этом месяце расходы на мелкие покупки выше обычного.
+                Попробуй сократить ежедневные траты на 100–150 сом.
+            </p>
+        </div>
+    </div>
+
+    <div class="transactions-card">
+        <div class="card-header">
+            <h3>Последние операции</h3>
+            <a href="#">Смотреть все</a>
+        </div>
+
+        <div class="transactions-list">
+            {% for transaction in transactions %}
+            <div class="transaction-item">
+                <div>
+                    <h4>{{ transaction.title }}</h4>
+                    <p>{{ transaction.date }}</p>
+                </div>
+                <strong>{{ transaction.amount }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
