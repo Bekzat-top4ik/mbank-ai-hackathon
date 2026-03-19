@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Sum
 from .models import Transaction, Category
 
 
@@ -22,6 +23,29 @@ class TransactionForm(forms.ModelForm):
                 'class': 'form-input'
             }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get('amount')
+        transaction_type = cleaned_data.get('transaction_type')
+
+        income_total = Transaction.objects.filter(
+            transaction_type='income'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        expense_total = Transaction.objects.filter(
+            transaction_type='expense'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        balance = income_total - expense_total
+
+        if transaction_type == 'expense' and amount:
+            if amount > balance:
+                raise forms.ValidationError(
+                    f'Недостаточно средств. Текущий баланс: {balance} сом.'
+                )
+
+        return cleaned_data
 
     def save(self, commit=True):
         transaction = super().save(commit=False)

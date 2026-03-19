@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from django.db.models import Sum
 from finance.models import Transaction
 from finance.forms import TransactionForm
-from datetime import date
+from datetime import date, datetime, timedelta
 import calendar
 from django.http import JsonResponse
+
 
 
 def home(request):
@@ -58,29 +59,34 @@ def budget_warning_api(request):
         'warning_message': warning_message,
     })
 
-
 def dashboard(request):
-    transactions = Transaction.objects.order_by('-created_at')[:5]
+    today = date.today()
 
-    income_total = Transaction.objects.filter(
+    month_transactions = Transaction.objects.filter(
+        created_at__year=today.year,
+        created_at__month=today.month
+    )
+
+    transactions = month_transactions.order_by('-created_at')[:5]
+
+    income_total = month_transactions.filter(
         transaction_type='income'
     ).aggregate(total=Sum('amount'))['total'] or 0
 
-    expense_total = Transaction.objects.filter(
+    expense_total = month_transactions.filter(
         transaction_type='expense'
     ).aggregate(total=Sum('amount'))['total'] or 0
 
     balance = income_total - expense_total
 
     category_stats = (
-        Transaction.objects
+        month_transactions
         .filter(transaction_type='expense')
         .values('category__name')
         .annotate(total=Sum('amount'))
         .order_by('-total')
     )
 
-    today = date.today()
     days_in_month = calendar.monthrange(today.year, today.month)[1]
     days_passed = today.day
     days_left = days_in_month - today.day
@@ -132,10 +138,10 @@ def dashboard(request):
         'warning_message': warning_message,
         'notify_title': notify_title,
         'notify_message': notify_message,
+        'current_month': today.strftime('%B'),
     }
 
     return render(request, 'dashboard.html', context)
-
 def add_transaction(request):
     if request.method == 'POST':
         form = TransactionForm(request.POST)

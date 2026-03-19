@@ -1,6 +1,33 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+
+<div id="notificationModal" class="bank-modal">
+    <div class="bank-modal-content">
+        <div class="bank-modal-icon">🔔</div>
+        <h3 class="bank-modal-title">Включить уведомления?</h3>
+        <p class="bank-modal-text">
+            mBank AI может предупреждать о крупных расходах и важных финансовых событиях.
+        </p>
+
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button id="allowNotifications" class="bank-modal-btn">Разрешить</button>
+            <button id="laterNotifications" class="bank-modal-btn secondary">Позже</button>
+        </div>
+    </div>
+</div>
+
+<div id="mbankToast" class="mbank-toast toast-warning">
+    <div class="toast-icon" id="toastIcon">⚠️</div>
+    <div class="toast-body">
+        <div class="toast-title" id="toastTitle">Предупреждение</div>
+        <div class="toast-text" id="toastText">Сообщение</div>
+    </div>
+    <button id="toastClose" class="toast-close">&times;</button>
+</div>
+
+
 <div class="dashboard-page">
 
     <div class="welcome-block">
@@ -27,29 +54,27 @@
         </div>
     </div>
 
-    <button id="enableNotificationsBtn" class="main-btn" type="button">
-    Включить уведомления
-</button>
 
 
-    <div class="cards-grid">
-        <div class="info-card">
-            <h3>Финансовая цель</h3>
-            <p>Накопить на новый телефон</p>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ goal_progress }}%;"></div>
-            </div>
-            <p class="progress-text">{{ goal_progress }}% выполнено</p>
-        </div>
 
-        <div class="info-card">
-            <h3>AI совет</h3>
-            <p>
-                В этом месяце расходы на мелкие покупки выше обычного.
-                Попробуй сократить ежедневные траты на 100–150 сом.
-            </p>
-        </div>
-    </div>
+<!--    <div class="cards-grid">-->
+<!--        <div class="info-card">-->
+<!--            <h3>Финансовая цель</h3>-->
+<!--            <p>Накопить на новый телефон</p>-->
+<!--            <div class="progress-bar">-->
+<!--                <div class="progress-fill" style="width: {{ goal_progress }}%;"></div>-->
+<!--            </div>-->
+<!--            <p class="progress-text">{{ goal_progress }}% выполнено</p>-->
+<!--        </div>-->
+
+<!--        <div class="info-card">-->
+<!--            <h3>AI совет</h3>-->
+<!--            <p>-->
+<!--                В этом месяце расходы на мелкие покупки выше обычного.-->
+<!--                Попробуй сократить ежедневные траты на 100–150 сом.-->
+<!--            </p>-->
+<!--        </div>-->
+<!--    </div>-->
 
     <div class="transactions-card">
         <div class="card-header">
@@ -123,111 +148,125 @@
     </div>
 </div>
 
-<div class="ai-card">
-    <h3>AI-совет</h3>
-    <p>{{ ai_tip }}</p>
-</div>
-
-<div class="chart-card">
-    <h3>Диаграмма расходов</h3>
-    <canvas id="expenseChart"></canvas>
-</div>
 
 {{ category_labels|json_script:"category-labels" }}
 {{ category_totals|json_script:"category-totals" }}
 
 
 <script>
+let lastWarningMessage = null;
+
 document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("notificationModal");
+    const allowBtn = document.getElementById("allowNotifications");
+    const laterBtn = document.getElementById("laterNotifications");
 
-    /* ---------- Диаграмма ---------- */
+    const toast = document.getElementById("mbankToast");
+    const toastTitle = document.getElementById("toastTitle");
+    const toastText = document.getElementById("toastText");
+    const toastIcon = document.getElementById("toastIcon");
+    const toastClose = document.getElementById("toastClose");
 
-    const labelsEl = document.getElementById('category-labels');
-    const totalsEl = document.getElementById('category-totals');
-    const ctx = document.getElementById('expenseChart');
+    function showToast(type, title, message, icon = "⚠️") {
+        if (!toast || !toastTitle || !toastText || !toastIcon) return;
 
-    if (labelsEl && totalsEl && ctx && typeof Chart !== "undefined") {
+        toast.className = "mbank-toast " + type;
+        toastTitle.textContent = title;
+        toastText.textContent = message;
+        toastIcon.textContent = icon;
 
-        const categoryLabels = JSON.parse(labelsEl.textContent);
-        const categoryTotals = JSON.parse(totalsEl.textContent);
+        toast.classList.add("show");
 
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    label: 'Расходы',
-                    data: categoryTotals,
-                    backgroundColor: [
-                        '#00A651',
-                        '#34D399',
-                        '#10B981',
-                        '#059669',
-                        '#6EE7B7',
-                        '#A7F3D0'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '65%',
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 4500);
+    }
+
+    if (toastClose) {
+        toastClose.addEventListener("click", function () {
+            toast.classList.remove("show");
+        });
+    }
+
+    /* popup разрешения */
+    const notifEnabled = localStorage.getItem("notif_enabled");
+    const notifLater = localStorage.getItem("notif_later");
+
+    if (modal && !notifEnabled && !notifLater) {
+        modal.classList.add("show");
+    }
+
+    if (allowBtn) {
+    allowBtn.addEventListener("click", async function () {
+        if ("Notification" in window) {
+            const permission = await Notification.requestPermission();
+
+            if (permission === "granted") {
+                localStorage.setItem("notif_enabled", "true");
+
+                showToast(
+                    "toast-success",
+                    "Уведомления включены",
+                    "Теперь mBank AI будет показывать важные события.",
+                    "✅"
+                );
+            } else {
+                showToast(
+                    "toast-danger",
+                    "Доступ не выдан",
+                    "Браузер не разрешил уведомления.",
+                    "❌"
+                );
             }
+        }
+
+        if (modal) modal.classList.remove("show");
+    });
+}
+
+
+    if (laterBtn) {
+        laterBtn.addEventListener("click", function () {
+            localStorage.setItem("notif_later", "true");
+            if (modal) modal.classList.remove("show");
         });
     }
 
+    /* проверка бюджета */
+    async function checkBudgetWarning() {
+        try {
+            const response = await fetch("/api/budget-warning/");
+            const data = await response.json();
 
-    /* ---------- Разрешение уведомлений ---------- */
+            const enabled = localStorage.getItem("notif_enabled") === "true";
 
-    async function requestNotificationPermission() {
-        if (!("Notification" in window)) {
-            alert("Браузер не поддерживает уведомления.");
-            return;
+            if (
+                enabled &&
+                data.has_warning &&
+                data.warning_message &&
+                data.warning_message !== lastWarningMessage
+            ) {
+                showToast(
+                    "toast-warning",
+                    "Финансовое предупреждение",
+                    data.warning_message,
+                    "⚠️"
+                );
+
+                lastWarningMessage = data.warning_message;
+            }
+
+            if (!data.has_warning) {
+                lastWarningMessage = null;
+            }
+        } catch (error) {
+            console.error("Ошибка бюджета:", error);
         }
-
-        const permission = await Notification.requestPermission();
-
-        if (permission === "granted") {
-            alert("Уведомления включены.");
-        } else {
-            alert("Разрешение на уведомления не выдано.");
-        }
     }
 
-    const btn = document.getElementById("enableNotificationsBtn");
-
-    if (btn) {
-        btn.addEventListener("click", requestNotificationPermission);
-    }
-
-
-    /* ---------- Банковское уведомление ---------- */
-
-    const notifyTitle = `{{ notify_title|default:''|escapejs }}`;
-    const notifyMessage = `{{ notify_message|default:''|escapejs }}`;
-
-    if (
-        notifyTitle &&
-        notifyMessage &&
-        "Notification" in window &&
-        Notification.permission === "granted"
-    ) {
-
-        new Notification(notifyTitle, {
-            body: notifyMessage,
-            icon: "/static/img/mbank-icon.png",
-            tag: "bank-event"
-        });
-
-    }
-
+    checkBudgetWarning();
+    setInterval(checkBudgetWarning, 20000);
 });
 </script>
-
 
 {% endblock %}
