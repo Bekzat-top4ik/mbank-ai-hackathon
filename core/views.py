@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from finance.models import Transaction
@@ -5,13 +6,18 @@ from finance.forms import TransactionForm
 from datetime import date, datetime, timedelta
 import calendar
 from django.http import JsonResponse
+from decimal import Decimal
 
+=======
+from django.shortcuts import render
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e
 
 
 def home(request):
     return render(request, 'home.html')
 
 
+<<<<<<< HEAD
 def budget_warning_api(request):
     income_total = Transaction.objects.filter(
         transaction_type='income'
@@ -91,13 +97,13 @@ def dashboard(request):
     days_passed = today.day
     days_left = days_in_month - today.day
 
-    avg_daily_expense = 0
-    predicted_expense = 0
+    avg_daily_expense = Decimal(0)
+    predicted_expense = Decimal(0)
     predicted_balance = balance
 
     if days_passed > 0:
-        avg_daily_expense = expense_total / days_passed
-        predicted_expense = avg_daily_expense * days_left
+        avg_daily_expense = expense_total / Decimal(days_passed)
+        predicted_expense = avg_daily_expense * Decimal(days_left)
         predicted_balance = balance - predicted_expense
 
     top_category = category_stats[0] if category_stats else None
@@ -164,3 +170,20 @@ def add_transaction(request):
 def transactions_list(request):
     transactions = Transaction.objects.order_by('-created_at')
     return render(request, 'transactions.html', {'transactions': transactions})
+=======
+def dashboard(request):
+    context = {
+        'user_name': 'Bekzat',
+        'balance': 24500,
+        'income': 12000,
+        'expense': 5300,
+        'goal_progress': 68,
+        'transactions': [
+            {'title': 'Продукты', 'amount': '-850 сом', 'date': '12 мар'},
+            {'title': 'Такси', 'amount': '-230 сом', 'date': '11 мар'},
+            {'title': 'Пополнение', 'amount': '+5000 сом', 'date': '10 мар'},
+            {'title': 'Кофе', 'amount': '-180 сом', 'date': '10 мар'},
+        ]
+    }
+    return render(request, 'dashboard.html', context)
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e

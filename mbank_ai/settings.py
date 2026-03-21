@@ -20,9 +20,15 @@ INSTALLED_APPS = [
     'core',
     'users',
     'finance',
+<<<<<<< HEAD
      'goals',
      'reminders',
     # 'assistant',
+=======
+    'goals',
+    'reminders',
+    'assistant',
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e
 ]
 
 MIDDLEWARE = [

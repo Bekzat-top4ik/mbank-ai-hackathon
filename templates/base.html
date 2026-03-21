@@ -4,13 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mBank AI</title>
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+    <title>Mbank AI</title>
+=======
+>>>>>>> Stashed changes
     <link rel="stylesheet" href="{% static 'style.css' %}">
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
+<body>
+
+<header class="navbar mobile-navbar">
+    <div class="nav-inner">
+        <a href="{% url 'home' %}" class="brand">
+            <img src="{%static 'img/logo-Mbank.jpg'%}" class="brand-logo-img" alt="logo">
+            <div class="brand-text">
+                <h2>Mbank AI</h2>
+                <p>Financial Assistant</p>
+            </div>
+        </a>
+=======
+    <title>mBank AI</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
 <body>
 
 <header class="navbar">
@@ -22,11 +41,17 @@
                 <p>Financial Assistant</p>
             </div>
         </div>
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e
 
         <nav class="nav-links">
             <a href="{% url 'home' %}">Главная</a>
             <a href="{% url 'dashboard' %}">Dashboard</a>
+<<<<<<< HEAD
+            <a href="{% url 'transactions' %}">Транзакции</a>
+            <a href=#>Assistant</a>
+=======
 
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e
         </nav>
     </div>
 </header>

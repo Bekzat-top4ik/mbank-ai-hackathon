@@ -1,4 +1,5 @@
 from django.db import models
+<<<<<<< HEAD
 
 
 class Category(models.Model):
@@ -23,3 +24,5 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+=======
+>>>>>>> e45c40c9bb56f3ceba5d01ca611cde93739d173e

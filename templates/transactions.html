@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="transactions-page">
+
+    <div class="page-header">
+        <div>
+            <p class="section-mini">История</p>
+            <h1>Транзакции</h1>
+        </div>
+
+        <a href="{% url 'add_transaction' %}" class="main-btn green-btn">
+            + Добавить
+        </a>
+    </div>
+
+    <!-- фильтры -->
+    <div class="filters">
+        <button class="filter-btn active" data-type="all">Все</button>
+        <button class="filter-btn" data-type="income">Доходы</button>
+        <button class="filter-btn" data-type="expense">Расходы</button>
+    </div>
+
+    <!-- список -->
+    <div class="transactions-card">
+        <div class="transactions-list" id="transactionsList">
+
+            {% for transaction in transactions %}
+            <div class="transaction-item"
+                 data-type="{{ transaction.transaction_type }}">
+
+                <div class="transaction-left">
+                    <div class="transaction-avatar">
+                        {% if transaction.transaction_type == 'expense' %}
+                            💳
+                        {% else %}
+                            💰
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h4>{{ transaction.title }}</h4>
+                        <p>{{ transaction.created_at|date:"d M Y" }}</p>
+                    </div>
+                </div>
+
+                <strong class="{% if transaction.transaction_type == 'expense' %}amount-expense{% else %}amount-income{% endif %}">
+                    {% if transaction.transaction_type == 'expense' %}
+                        -{{ transaction.amount }} сом
+                    {% else %}
+                        +{{ transaction.amount }} сом
+                    {% endif %}
+                </strong>
+            </div>
+            {% empty %}
+            <p class="empty-text">Пока нет операций</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>
+
+<!-- JS фильтр -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buttons = document.querySelectorAll(".filter-btn");
+    const items = document.querySelectorAll(".transaction-item");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+
+            buttons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const type = btn.dataset.type;
+
+            items.forEach(item => {
+                if (type === "all" || item.dataset.type === type) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+        });
+    });
+
+});
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const swipeItems = document.querySelectorAll(".transaction-item.swipeable");
+
+    swipeItems.forEach(item => {
+        let startX = 0;
+        let moved = false;
+
+        item.addEventListener("touchstart", function (e) {
+            startX = e.touches[0].clientX;
+            moved = false;
+        });
+
+        item.addEventListener("touchmove", function (e) {
+            const currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+
+            if (diff < -30) {
+                item.classList.add("swipe-open");
+                moved = true;
+            }
+
+            if (diff > 30) {
+                item.classList.remove("swipe-open");
+                moved = true;
+            }
+        });
+
+        item.addEventListener("click", function () {
+            if (!moved) {
+                swipeItems.forEach(el => {
+                    if (el !== item) el.classList.remove("swipe-open");
+                });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
