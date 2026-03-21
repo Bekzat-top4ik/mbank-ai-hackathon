@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'finance',
     'goals',
     'reminders',
-    #'assistant',
+    'assistant',
 ]
 
 MIDDLEWARE = [
