@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Аккаунт</p>
+            <h1>Регистрация</h1>
+        </div>
+        <a href="{% url 'login' %}" class="main-btn">Войти</a>
+    </div>
+
+    <div class="balance-card">
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+            <div style="margin-bottom: 15px;">
+                <label style="color:white; display:block; margin-bottom:5px; font-weight:bold;">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                <p style="color:#ffcdd2;">{{ field.errors }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="main-btn" style="border:none; cursor:pointer;">
+                Зарегистрироваться
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

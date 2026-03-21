@@ -4,7 +4,19 @@
 <div class="hero">
     <div class="hero-card">
         <div>
-            <p class="hero-label">mBank AI Assistant</p>
+            {% if request.user.is_authenticated %}
+                {% if request.user.profile.avatar %}
+                    <img src="{{ request.user.profile.avatar.url }}"
+                         style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:15px;">
+                {% else %}
+                    <div style="width:80px; height:80px; border-radius:50%; background:#ffffff40;
+                                display:flex; align-items:center; justify-content:center;
+                                font-size:30px; margin-bottom:15px;">👤</div>
+                {% endif %}
+                <p class="hero-label">Привет, {{ request.user.username }}!</p>
+            {% else %}
+                <p class="hero-label">mBank AI Assistant</p>
+            {% endif %}
             <h1>Умный помощник для твоих финансов</h1>
             <p class="hero-text">
                 Контролируй расходы, ставь цели и получай советы от AI.

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Аккаунт</p>
+            <h1>Удаление аккаунта</h1>
+            <p class="section-subtext">Это действие нельзя отменить!</p>
+        </div>
+        <a href="{% url 'profile' %}" class="main-btn">← Назад</a>
+    </div>
+
+    <div class="balance-card">
+        <p style="color:white; margin-bottom:15px;">
+            ⚠️ Все твои данные и цели будут удалены навсегда!
+        </p>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" style="background:#e53935; color:white; padding:10px 25px;
+                    border:none; border-radius:8px; cursor:pointer; font-size:16px;">
+                🗑️ Удалить аккаунт
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

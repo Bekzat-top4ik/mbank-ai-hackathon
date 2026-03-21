@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Финансовые цели</p>
+            <h1>Мои цели накопления</h1>
+            <p class="section-subtext">Следи за прогрессом своих целей.</p>
+        </div>
+        <a href="{% url 'add_goal' %}" class="main-btn">+ Добавить цель</a>
+    </div>
+
+
+    <div class="balance-card">
+        <p class="balance-label">Общая статистика</p>
+        <h2>{{ total_current }} / {{ total_target }} сом</h2>
+    </div>
+
+
+    {% for goal in goals %}
+    <div class="balance-card">
+        <p class="balance-label">
+            {{ goal.title }}
+            {% if goal.percentage >= 100 %}
+                ✅ Выполнено!
+            {% endif %}
+        </p>
+        <h2>{{ goal.current_amount }} / {{ goal.target_amount }} сом</h2>
+        <div class="balance-stats">
+            <div class="stat-box income">
+                <span>Прогресс</span>
+                <strong>{{ goal.percentage }}%</strong>
+            </div>
+            <div class="stat-box expense">
+                <span>Дедлайн</span>
+                <strong>{{ goal.deadline }}</strong>
+            </div>
+        </div>
+        <div style="background:#ffffff40; border-radius:5px; height:10px; margin-top:10px;">
+            <div style="background:white; width:{{ goal.percentage }}%; height:10px; border-radius:5px;"></div>
+        </div>
+
+        <form method="POST" action="{% url 'add_amount' goal.id %}" style="margin-top:10px; display:flex; gap:10px;">
+            {% csrf_token %}
+            <input type="number" name="amount" placeholder="Пополнить сом"
+                   style="panding:8px; border-radius:6px; border:none; width:60%;">
+            <button type="submit" class="main-btn" style="border:none; cursor:pointer;">+ Добавить</button>
+        </form>
+
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <a href="{% url 'edit_goal' goal.id %}" class="main-btn"> Изменить</a>
+            <a href="{% url 'delete_goal' goal.id %}"
+            style="background:#e53935; color:white; padding:8px 15px; border-radius:6px; text-decoration:none;"
+            onclick="return confirm('Удалить цель?')">🗑️ Удалить</a>
+        </div>
+    </div>
+    {% empty %}
+    <p style="color:#888;">Целей пока нет. Добавь первую!</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

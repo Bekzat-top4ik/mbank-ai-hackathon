@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Финансовые цели</p>
+            <h1>Добавить цель</h1>
+        </div>
+        <a href="{% url 'goals_list' %}" class="main-btn">← Назад</a>
+    </div>
+
+    <div class="balance-card">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="main-btn" style="border:none; cursor:pointer;">
+                💾 Сохранить цель
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

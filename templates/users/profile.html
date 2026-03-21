@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <div class="welcome-block">
+        <div>
+            <p class="section-mini">Аккаунт</p>
+            <h1>{{ request.user.username }}</h1>
+            <p class="section-subtext">{{ motivation }}</p>
+        </div>
+        <a href="{% url 'logout' %}" class="main-btn" style="background:#e53935;">Выйти</a>
+    </div>
+
+    <!-- Аватарка и email -->
+    <div class="balance-card">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}"
+                         style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                {% else %}
+                    <div style="width:80px; height:80px; border-radius:50%; background:#ffffff40;
+                                display:flex; align-items:center; justify-content:center;
+                                font-size:30px;">👤</div>
+                {% endif %}
+                <div style="flex:1;">
+                    <label style="color:white; font-weight:bold;">Аватарка</label>
+                    <input type="file" name="avatar" accept="image/*"
+                           style="display:block; color:white; margin-top:5px;">
+                </div>
+            </div>
+            <label style="color:white; font-weight:bold; display:block; margin-bottom:5px;">Email</label>
+            <input type="email" name="email" value="{{ request.user.email }}"
+                   placeholder="Введи email"
+                   style="width:100%; padding:10px; border-radius:8px; border:none; margin-bottom:10px;">
+            <button type="submit" class="main-btn" style="border:none; cursor:pointer;">
+                💾 Сохранить
+            </button>
+        </form>
+    </div>
+
+    <!-- Статистика -->
+    <div class="balance-card">
+        <p class="balance-label">Статистика</p>
+        <div class="balance-stats">
+            <div class="stat-box income">
+                <span>Всего целей</span>
+                <strong>{{ total_goals }}</strong>
+            </div>
+            <div class="stat-box expense">
+                <span>Выполнено</span>
+                <strong>{{ completed_goals }}</strong>
+            </div>
+        </div>
+        <div class="balance-stats" style="margin-top:10px;">
+            <div class="stat-box income">
+                <span>Накоплено</span>
+                <strong>{{ total_saved }} сом</strong>
+            </div>
+            <div class="stat-box expense">
+                <span>Дней в приложении</span>
+                <strong>{{ request.user.date_joined|timesince }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Значки -->
+    <div class="balance-card">
+        <p class="balance-label">Достижения</p>
+        {% if badges %}
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                {% for badge in badges %}
+                <div style="background:#ffffff20; padding:8px 15px; border-radius:20px; color:white;">
+                    {{ badge }}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color:#ffffff80;">Пока нет достижений. Создай первую цель!</p>
+        {% endif %}
+
+        <!-- Смена пароля -->
+        <p class="balance-label">Безопасность</p>
+        <a href="{% url 'change_password' %}" class="main-btn" style="border:none; cursor:pointer; display:inline-block;">
+            🔒 Сменить пароль
+        </a>
+
+        <a href="{% url 'delete_account' %}"
+           style="background:#e53935; color:white; padding:8px 15px; border-radius:6px;
+                    text-decoration:none; display:inline-block; margin-top:10px;">
+            🗑️ Удалить аккаунт
+        </a>
+
+        <p class="balance-label">✅ Выполненные цели</p>
+        {% for goal in completed_goals_list %}
+        <div style="background:#ffffff20; padding:10px; border-radius:8px; margin-top:8px; color:white;">
+        🏆 {{ goal.title }} — {{ goal.target_amount }} сом
+        </div>
+        {% empty %}
+        <p style="color:#ffffff80;">Пока нет выполненных целей!</p>
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}

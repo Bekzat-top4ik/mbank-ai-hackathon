@@ -7,7 +7,7 @@ def home(request):
 
 def dashboard(request):
     context = {
-        'user_name': 'Bekzat',
+        'user_name': request.user.username,
         'balance': 24500,
         'income': 12000,
         'expense': 5300,
