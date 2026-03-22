@@ -1,6 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+
+<div id="notificationModal" class="bank-modal">
+    <div class="bank-modal-content">
+        <div class="bank-modal-icon">🔔</div>
+        <h3 class="bank-modal-title">Включить уведомления?</h3>
+        <p class="bank-modal-text">
+            Mbank AI может предупреждать о крупных расходах и важных финансовых событиях.
+        </p>
+
+        <div class="bank-modal-actions">
+            <button id="allowNotifications" class="bank-modal-btn">Разрешить</button>
+            <button id="laterNotifications" class="bank-modal-btn secondary">Позже</button>
+        </div>
+    </div>
+</div>
+
+
 <div class="dashboard-page">
 
     <div class="welcome-block">
@@ -66,4 +84,135 @@
     </div>
 
 </div>
+
+
+
+<div id="MbankToast" class="Mbank-toast toast-warning">
+    <div class="toast-icon" id="toastIcon">⚠️</div>
+    <div class="toast-body">
+        <div class="toast-title" id="toastTitle">Предупреждение</div>
+        <div class="toast-text" id="toastText">Сообщение</div>
+    </div>
+    <button id="toastClose" class="toast-close">&times;</button>
+</div>
+
+
+
+
+<script>
+let lastWarningMessage = null;
+
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("notificationModal");
+    const allowBtn = document.getElementById("allowNotifications");
+    const laterBtn = document.getElementById("laterNotifications");
+
+    const toast = document.getElementById("MbankToast");
+    const toastTitle = document.getElementById("toastTitle");
+    const toastText = document.getElementById("toastText");
+    const toastIcon = document.getElementById("toastIcon");
+    const toastClose = document.getElementById("toastClose");
+
+    function showToast(type, title, message, icon = "⚠️") {
+        if (!toast || !toastTitle || !toastText || !toastIcon) return;
+
+        toast.className = "Mbank-toast " + type;
+        toastTitle.textContent = title;
+        toastText.textContent = message;
+        toastIcon.textContent = icon;
+
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 4500);
+    }
+
+    if (toastClose) {
+        toastClose.addEventListener("click", function () {
+            toast.classList.remove("show");
+        });
+    }
+
+    const notifEnabled = localStorage.getItem("notif_enabled");
+    const notifLater = localStorage.getItem("notif_later");
+
+    if (modal && !notifEnabled && !notifLater) {
+        modal.classList.add("show");
+    }
+
+    if (allowBtn) {
+        allowBtn.addEventListener("click", async function () {
+            if ("Notification" in window) {
+                const permission = await Notification.requestPermission();
+
+                if (permission === "granted") {
+                    localStorage.setItem("notif_enabled", "true");
+
+                    showToast(
+                        "toast-success",
+                        "Уведомления включены",
+                        "Теперь Mbank AI будет сообщать о важных событиях.",
+                        "✅"
+                    );
+                } else {
+                    showToast(
+                        "toast-danger",
+                        "Доступ не выдан",
+                        "Браузер не разрешил уведомления.",
+                        "❌"
+                    );
+                }
+            }
+
+            modal.classList.remove("show");
+        });
+    }
+
+    if (laterBtn) {
+        laterBtn.addEventListener("click", function () {
+            localStorage.setItem("notif_later", "true");
+            modal.classList.remove("show");
+        });
+    }
+
+    async function checkBudgetWarning() {
+        try {
+            const response = await fetch("/api/budget-warning/");
+            const data = await response.json();
+
+            const enabled = localStorage.getItem("notif_enabled") === "true";
+
+            if (
+                enabled &&
+                data.has_warning &&
+                data.warning_message &&
+                data.warning_message !== lastWarningMessage
+            ) {
+                showToast(
+                    "toast-warning",
+                    "Финансовое предупреждение",
+                    data.warning_message,
+                    "⚠️"
+                );
+
+                lastWarningMessage = data.warning_message;
+            }
+
+            if (!data.has_warning) {
+                lastWarningMessage = null;
+            }
+
+        } catch (error) {
+            console.error("Ошибка бюджета:", error);
+        }
+    }
+
+    checkBudgetWarning();
+    setInterval(checkBudgetWarning, 20000);
+});
+</script>
+</script>
+
+
 {% endblock %}
