@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="transactions-page">
+
+    <div class="page-header">
+        <div>
+            <p class="section-mini">История</p>
+            <h1>Транзакции</h1>
+        </div>
+
+        <a href="{% url 'add_transaction' %}" class="main-btn green-btn">
+            + Добавить
+        </a>
+    </div>
+
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">Все</button>
+        <button class="filter-btn" data-filter="income">Доходы</button>
+        <button class="filter-btn" data-filter="expense">Расходы</button>
+    </div>
+
+    <div class="transactions-list" id="transactionsList">
+        {% for t in transactions %}
+        <div class="transaction-row" data-type="{{ t.transaction_type }}">
+            <div class="transaction-swipe-bg">
+                <span class="transaction-swipe-action">Удалить</span>
+            </div>
+
+            <div class="transaction-item swipeable">
+                <div class="transaction-left">
+                    <div class="transaction-icon">
+                        {% if t.transaction_type == 'income' %}
+                            💰
+                        {% else %}
+                            💳
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="transaction-title">{{ t.title }}</div>
+                        <div class="transaction-date">{{ t.created_at|date:"d M Y" }}</div>
+                    </div>
+                </div>
+
+                <div class="transaction-amount {% if t.transaction_type == 'income' %}amount-income{% else %}amount-expense{% endif %}">
+                    {% if t.transaction_type == 'income' %}
+                        +{{ t.amount }} сом
+                    {% else %}
+                        -{{ t.amount }} сом
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-text">Пока нет транзакций</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const transactionRows = document.querySelectorAll(".transaction-row");
+
+    filterButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            filterButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            const filter = button.dataset.filter;
+
+            transactionRows.forEach(row => {
+                const type = row.dataset.type;
+
+                if (filter === "all" || filter === type) {
+                    row.style.display = "block";
+                    requestAnimationFrame(() => {
+                        row.classList.remove("hidden-row");
+                    });
+                } else {
+                    row.classList.add("hidden-row");
+                    setTimeout(() => {
+                        row.style.display = "none";
+                    }, 180);
+                }
+            });
+        });
+    });
+
+    const swipeItems = document.querySelectorAll(".transaction-item.swipeable");
+
+    swipeItems.forEach(item => {
+        let startX = 0;
+        let currentX = 0;
+
+        item.addEventListener("touchstart", function (e) {
+            startX = e.touches[0].clientX;
+        });
+
+        item.addEventListener("touchmove", function (e) {
+            currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+
+            if (diff < -30) {
+                item.classList.add("swipe-open");
+            }
+
+            if (diff > 30) {
+                item.classList.remove("swipe-open");
+            }
+        });
+
+        item.addEventListener("click", function () {
+            if (item.classList.contains("swipe-open")) {
+                item.classList.remove("swipe-open");
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

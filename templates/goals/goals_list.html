@@ -44,7 +44,7 @@
 
         <form method="POST" action="{% url 'add_amount' goal.id %}" style="margin-top:10px; display:flex; gap:10px;">
             {% csrf_token %}
-            <input type="number" name="amount" placeholder="Пополнить сом"
+            <input type="nuMber" name="amount" placeholder="Пополнить сом"
                    style="panding:8px; border-radius:6px; border:none; width:60%;">
             <button type="submit" class="main-btn" style="border:none; cursor:pointer;">+ Добавить</button>
         </form>

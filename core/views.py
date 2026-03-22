@@ -1,22 +1,207 @@
-from django.shortcuts import render
+from decimal import Decimal
+from datetime import date
+import calendar
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.db.models import Sum
+
+from finance.models import Transaction
+from finance.forms import TransactionForm
 
 
 def home(request):
     return render(request, 'home.html')
 
 
+def budget_warning_api(request):
+    today = date.today()
+
+    month_transactions = Transaction.objects.filter(
+        created_at__year=today.year,
+        created_at__month=today.month
+    )
+
+    income_total = month_transactions.filter(
+        transaction_type='income'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    expense_total = month_transactions.filter(
+        transaction_type='expense'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    balance = income_total - expense_total
+
+    days_in_month = calendar.monthrange(today.year, today.month)[1]
+    days_passed = today.day
+    days_left = days_in_month - today.day
+
+    avg_daily_expense = Decimal('0')
+    predicted_expense = Decimal('0')
+    predicted_balance = balance
+
+    if days_passed > 0:
+        avg_daily_expense = expense_total / Decimal(days_passed)
+        predicted_expense = avg_daily_expense * Decimal(days_left)
+        predicted_balance = balance - predicted_expense
+
+    warning_message = None
+
+    if predicted_balance < 0:
+        warning_message = (
+            "Если траты продолжатся в таком темпе, к концу месяца баланс может уйти в минус."
+        )
+    elif avg_daily_expense > 0 and predicted_expense > balance:
+        warning_message = (
+            "Темп расходов слишком высокий. Рекомендуется сократить траты."
+        )
+    elif expense_total > income_total and income_total > 0:
+        warning_message = (
+            "Расходы уже превышают доходы. Стоит пересмотреть бюджет."
+        )
+
+    return JsonResponse({
+        'has_warning': bool(warning_message),
+        'warning_message': warning_message,
+    })
+
+
 def dashboard(request):
+    today = date.today()
+
+    month_transactions = Transaction.objects.filter(
+        created_at__year=today.year,
+        created_at__month=today.month
+    )
+
+    transactions = month_transactions.order_by('-created_at')[:5]
+
+    income_total = month_transactions.filter(
+        transaction_type='income'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    expense_total = month_transactions.filter(
+        transaction_type='expense'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    balance = income_total - expense_total
+
+    category_stats = (
+        month_transactions
+        .filter(transaction_type='expense')
+        .values('category__name')
+        .annotate(total=Sum('amount'))
+        .order_by('-total')
+    )
+
+    days_in_month = calendar.monthrange(today.year, today.month)[1]
+    days_passed = today.day
+    days_left = days_in_month - today.day
+
+    avg_daily_expense = Decimal('0')
+    predicted_expense = Decimal('0')
+    predicted_balance = balance
+
+    if days_passed > 0:
+        avg_daily_expense = expense_total / Decimal(days_passed)
+        predicted_expense = avg_daily_expense * Decimal(days_left)
+        predicted_balance = balance - predicted_expense
+
+    top_category = category_stats[0] if category_stats else None
+    ai_tip = "Пока недостаточно данных для совета."
+
+    if top_category:
+        category_name = top_category['category__name'] or "Без категории"
+        ai_tip = (
+            f"Больше всего расходов уходит на категорию «{category_name}». "
+            f"Попробуй сократить траты в этой категории."
+        )
+
+    category_labels = []
+    category_totals = []
+
+    for stat in category_stats:
+        category_labels.append(stat['category__name'] or 'Без категории')
+        category_totals.append(float(stat['total']))
+
+    warning_message = None
+
+    if predicted_balance < 0:
+        warning_message = (
+            "Если траты продолжатся в таком темпе, к концу месяца баланс может уйти в минус."
+        )
+    elif avg_daily_expense > 0 and predicted_expense > balance:
+        warning_message = (
+            "Темп расходов слишком высокий. Рекомендуется сократить траты."
+        )
+    elif expense_total > income_total and income_total > 0:
+        warning_message = (
+            "Расходы уже превышают доходы. Стоит пересмотреть бюджет."
+        )
+
+    notify_title = request.session.pop('notify_title', None)
+    notify_message = request.session.pop('notify_message', None)
+
     context = {
+
         'user_name': request.user.username,
         'balance': 24500,
         'income': 12000,
         'expense': 5300,
+
+        'user_name': 'Bekzat',
+        'balance': balance,
+        'income': income_total,
+        'expense': expense_total,
+        'transactions': transactions,
+        'category_stats': category_stats,
+        'avg_daily_expense': round(avg_daily_expense, 2),
+        'predicted_expense': round(predicted_expense, 2),
+        'predicted_balance': round(predicted_balance, 2),
+        'days_left': days_left,
+        'ai_tip': ai_tip,
+        'category_labels': category_labels,
+        'category_totals': category_totals,
+        'warning_message': warning_message,
+        'notify_title': notify_title,
+        'notify_message': notify_message,
+        'current_month': today.strftime('%B'),
+
         'goal_progress': 68,
-        'transactions': [
-            {'title': 'Продукты', 'amount': '-850 сом', 'date': '12 мар'},
-            {'title': 'Такси', 'amount': '-230 сом', 'date': '11 мар'},
-            {'title': 'Пополнение', 'amount': '+5000 сом', 'date': '10 мар'},
-            {'title': 'Кофе', 'amount': '-180 сом', 'date': '10 мар'},
-        ]
     }
+
     return render(request, 'dashboard.html', context)
+
+
+def add_transaction(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save()
+
+            request.session['notify_title'] = 'Новая операция'
+            request.session['notify_message'] = (
+                f'Операция "{transaction.title}" на сумму {transaction.amount} сом добавлена.'
+            )
+
+            if transaction.transaction_type == 'expense' and transaction.amount >= 3000:
+                request.session['notify_title'] = 'Крупный расход'
+                request.session['notify_message'] = (
+                    f'Обнаружен крупный расход: {transaction.amount} сом.'
+                )
+            elif transaction.transaction_type == 'income':
+                request.session['notify_title'] = 'Новое поступление'
+                request.session['notify_message'] = (
+                    f'Поступление на сумму {transaction.amount} сом.'
+                )
+
+            return redirect('dashboard')
+    else:
+        form = TransactionForm()
+
+    return render(request, 'add_transaction.html', {'form': form})
+
+
+def transactions_list(request):
+    transactions = Transaction.objects.order_by('-created_at')
+    return render(request, 'transactions.html', {'transactions': transactions})

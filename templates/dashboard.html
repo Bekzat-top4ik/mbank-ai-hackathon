@@ -9,7 +9,7 @@
             <h1>Добро пожаловать, {{ user_name }}</h1>
             <p class="section-subtext">Вот краткий обзор твоих финансов на сегодня.</p>
         </div>
-        <a href="#" class="main-btn">+ Добавить расход</a>
+        <a href="{% url 'add_transaction' %}" class="main-btn">+ Добавить расход</a>
     </div>
 
     <div class="balance-card">
@@ -49,7 +49,7 @@
     <div class="transactions-card">
         <div class="card-header">
             <h3>Последние операции</h3>
-            <a href="#">Смотреть все</a>
+            <a href="{% url 'transactions' %}">Смотреть все</a>
         </div>
 
         <div class="transactions-list">

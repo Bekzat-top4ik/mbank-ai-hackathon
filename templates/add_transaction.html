@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="form-page">
+    <div class="form-card transaction-form-card">
+
+        <div class="transaction-form-top">
+            <p class="section-mini">Добавление операции</p>
+            <h1>Добавить операцию</h1>
+            <p class="section-subtext">
+                Заполни данные о доходе или расходе
+            </p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="form-error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" class="transaction-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div class="form-error" style="margin-top:8px;">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="transaction-form-actions">
+                <a href="{% url 'dashboard' %}" class="main-btn">Назад</a>
+                <button type="submit" class="main-btn green-btn">Сохранить</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -4,25 +4,125 @@
 <div class="hero">
     <div class="hero-card">
         <div>
-            {% if request.user.is_authenticated %}
-                {% if request.user.profile.avatar %}
-                    <img src="{{ request.user.profile.avatar.url }}"
-                         style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:15px;">
-                {% else %}
-                    <div style="width:80px; height:80px; border-radius:50%; background:#ffffff40;
-                                display:flex; align-items:center; justify-content:center;
-                                font-size:30px; margin-bottom:15px;">👤</div>
-                {% endif %}
-                <p class="hero-label">Привет, {{ request.user.username }}!</p>
-            {% else %}
-                <p class="hero-label">mBank AI Assistant</p>
-            {% endif %}
+{% if request.user.is_authenticated %}
+    {% if request.user.profile.avatar %}
+        <img src="{{ request.user.profile.avatar.url }}"
+             style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:15px;">
+    {% else %}
+        <div style="width:80px; height:80px; border-radius:50%; background:#ffffff40;
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:30px; margin-bottom:15px;">
+            👤
+        </div>
+    {% endif %}
+
+    <p class="hero-label">Привет, {{ request.user.username }}!</p>
+{% else %}
+    <p class="hero-label">Mbank AI Assistant</p>
+{% endif %}
             <h1>Умный помощник для твоих финансов</h1>
             <p class="hero-text">
                 Контролируй расходы, ставь цели и получай советы от AI.
+
+<div class="home-bank-page">
+
+    <section class="home-hero">
+        <div class="home-hero-left">
+            <h1 class="home-hero-title">
+                Умный финансовый помощник
+                для контроля расходов
+            </h1>
+            <p class="home-hero-text">
+                Анализируй траты, получай AI-подсказки, ставь финансовые цели
+                и следи за балансом в одном месте.
             </p>
-            <a href="{% url 'dashboard' %}" class="main-btn">Открыть dashboard</a>
+
+            <div class="home-hero-actions">
+                <a href="{% url 'dashboard' %}" class="main-btn green-btn">Открыть dashboard</a>
+                <a href=# class="main-btn">Открыть assistant</a>
+            </div>
         </div>
-    </div>
+
+        <div class="home-hero-right">
+            <div class="phone-mockup">
+                <div class="phone-topbar"></div>
+
+                <div class="phone-balance-card">
+                    <p>Баланс</p>
+                    <h3>48 170 сом</h3>
+
+                    <div class="phone-balance-mini">
+                        <div>
+                            <span>Доходы</span>
+                            <strong>23 000</strong>
+                        </div>
+                        <div>
+                            <span>Расходы</span>
+                            <strong>12 450</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phone-list-card">
+                    <div class="phone-list-item">
+                        <div class="phone-list-icon">☕</div>
+                        <div>
+                            <h4>Кафе</h4>
+                            <p>Сегодня</p>
+                        </div>
+                        <strong>-450 сом</strong>
+                    </div>
+
+                    <div class="phone-list-item">
+                        <div class="phone-list-icon">🚕</div>
+                        <div>
+                            <h4>Такси</h4>
+                            <p>Сегодня</p>
+                        </div>
+                        <strong>-320 сом</strong>
+                    </div>
+
+                    <div class="phone-list-item">
+                        <div class="phone-list-icon">💰</div>
+                        <div>
+                            <h4>Доход</h4>
+                            <p>Вчера</p>
+                        </div>
+                        <strong class="amount-income">+12 000 сом</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-features">
+        <div class="home-feature-card">
+            <div class="home-feature-icon">📊</div>
+            <h3>Аналитика расходов</h3>
+            <p>Смотри, куда уходят деньги, и контролируй категории расходов.</p>
+        </div>
+
+        <div class="home-feature-card">
+            <div class="home-feature-icon">🤖</div>
+            <h3>AI-подсказки</h3>
+            <p>Получай советы по экономии и предупреждения о перерасходе.</p>
+        </div>
+
+        <div class="home-feature-card">
+            <div class="home-feature-icon">🎯</div>
+            <h3>Финансовые цели</h3>
+            <p>Ставь цели, отслеживай прогресс и двигайся к накоплениям.</p>
+        </div>
+    </section>
+
+    <section class="home-insight-banner">
+        <div>
+            <p class="section-mini">AI Insight</p>
+            <h2>Система замечает риск перерасхода и предупреждает заранее</h2>
+        </div>
+        <a href=# class="main-btn green-btn">Попробовать assistant</a>
+    </section>
+
 </div>
+
 {% endblock %}
